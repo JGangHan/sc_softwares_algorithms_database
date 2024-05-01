@@ -12,3 +12,12 @@
 3. **Cell scoring**. 计算AUCell algorithm用来表示每个模块在单个细胞中的 regulon activit，从而构建一个 AUC score x cells 矩阵（类似genes x cells矩阵），从而可以用于数据降维
 ![image](https://github.com/JGangHan/sc_data_analysis/assets/75400599/62da89c5-e2f4-471f-beb8-5c4970e7d89c)
 
+
+
+
+
+
+
+
+
+
