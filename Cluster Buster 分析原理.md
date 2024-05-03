@@ -1,4 +1,4 @@
-## [Cluster Buster](https://bu.wenglab.org/cluster-buster/index.html)
+## [Cluster Buster (cbust)](https://bu.wenglab.org/cluster-buster/index.html)
 该方法用于识别某段DNA序列可能存在的motif簇（motif cluster）和可能性，及其具体富集到的motif基序和得分
 
 
