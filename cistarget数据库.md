@@ -34,11 +34,31 @@
 * create_cross_species_motifs_rankings_db.py：构建跨物种cistarge database
 
 ### 2.在构建绵羊cisTarget数据库过程中仅使用了‘create_cistarget_motif_databases.py’
+**Tips**
+1. 因为是需要用SCENIC做scRNA-seq+scATAC-seq联合分析，所以是通过peak区域构建的regions vs motif ranking matrix
+2. 可以使用其他类型的目标DNA区域
+3. 如果是构建genes vs motif ranking matrix，类似cisTarget示例数据集，应该是需要预先提取基因TSS上下游目标区域DNA序列（因为没做过，所以不太确定）
 
-
-
-
-
+**大概流程**
+1. 根据 peak.bed 文件提取序列 peak.fa
+2. motif 基序数据集 https://resources.aertslab.org/cistarget/motif_collections/v10nr_clust_public/v10nr_clust_public.zip
+3. 染色体格式 chr1
+4. 确认好输入文件格式、文件路径和软件路径之后就可以直接运行
+```
+/home/hanjiangang/anaconda3/envs/create_cistarget_databases/bin/python3.10 \
+/data/hanjiangang/sc/pycistarget/create_cisTarget_databases/create_cistarget_motif_databases.py \
+-f $consensdir \
+-M $cbdir \
+-m $motif_list \
+-o $outdir/$tag \
+-t 50 \
+-c $cbpath \
+-l
+```
+5. 输出三个文件
+   * cluster_V10_DPCL_sheep.motifs_vs_regions.scores.feather
+   * **cluster_V10_DPCL_sheep.regions_vs_motifs.rankings.feather** **该文件直接用于对regions进行motif富集分析**
+   * cluster_V10_DPCL_sheep.regions_vs_motifs.scores.feather
 
 
 
