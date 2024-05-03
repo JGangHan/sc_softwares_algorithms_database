@@ -67,6 +67,11 @@ V$TANTIGEN_B            1027 - 1045   +   2.3        ggtcagaagaggcaggcag
 V$CACBINDINGPROTEIN_Q6  1035 - 1043   +   1.52       gaggcaggc
 ```
 
+### scores are log likelihood ratios. 
+* The **cluster score**: log [ prob(cluster sequence given that it's a cluster of real sites) / prob(cluster sequence given that it's random DNA) ].
+* The **motif score**: log [ prob(motif sequence given that it's a real site) / prob(motif sequence given that it's random DNA) ].
+* **如何选择最佳的socre 阈值：没有统一答案，个人感觉可以根据得分选择top motif进行分析**
+
 
 
 
