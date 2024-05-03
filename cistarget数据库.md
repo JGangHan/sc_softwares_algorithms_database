@@ -40,10 +40,11 @@
 3. 如果是构建genes vs motif ranking matrix，类似cisTarget示例数据集，应该是需要预先提取基因TSS上下游目标区域DNA序列（因为没做过，所以不太确定）
 
 **大概流程**
-1. 根据 peak.bed 文件提取序列 peak.fa
-2. motif 基序数据集 https://resources.aertslab.org/cistarget/motif_collections/v10nr_clust_public/v10nr_clust_public.zip
-3. 染色体格式 chr1
-4. 确认好输入文件格式、文件路径和软件路径之后就可以直接运行
+1. 如果 scATAC-seq 数据分析过程用 pycisTopic 分析，会直接对 peaks 生成 consensus_regions.bed 文件
+2. 根据 consensus_regions.bed 文件提取序列 consensus_regions.fa
+3. motif 基序数据集 https://resources.aertslab.org/cistarget/motif_collections/v10nr_clust_public/v10nr_clust_public.zip
+4. 染色体格式 chr1
+5. 确认好输入文件格式、文件路径和软件路径之后就可以直接运行
 ```
 /home/hanjiangang/anaconda3/envs/create_cistarget_databases/bin/python3.10 \
 /data/hanjiangang/sc/pycistarget/create_cisTarget_databases/create_cistarget_motif_databases.py \
