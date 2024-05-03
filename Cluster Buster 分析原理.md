@@ -66,6 +66,13 @@ ERE                     1000 - 1014   -   0.729      aggacatagtgacaa
 V$TANTIGEN_B            1027 - 1045   +   2.3        ggtcagaagaggcaggcag
 V$CACBINDINGPROTEIN_Q6  1035 - 1043   +   1.52       gaggcaggc
 ```
+**DNA fragment**: ![d6444318ec0ea5e9c459d367b3808f85_TERToverview](https://github.com/JGangHan/software_information/assets/75400599/a5ce333d-b53d-4b5c-bbcb-e4d257edd1b9)
+
+**motifs cluster**: ![image](https://github.com/JGangHan/software_information/assets/75400599/05e09758-666a-4b84-90fd-dcc480aeaa5d)
+
+
+
+
 
 ### scores are log likelihood ratios. 
 * The **cluster score**: log [ prob(cluster sequence given that it's a cluster of real sites) / prob(cluster sequence given that it's random DNA) ].
