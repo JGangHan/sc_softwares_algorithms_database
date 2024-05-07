@@ -29,8 +29,10 @@
    * 输出结果包含 NES score and AUC socre，并按此排序
 6. 可以观察指定的 motif 基序（必须是富集到的）对应的潜在结合 regions
 7. **Differentially Enriched Motifs (DEM) 分析比较多个 regions list 所富集到的 motifs 差异水平**
-   * 输出结果类似于基因差异表达分析，包含多个指标：log2FC, adjusted_pval, mean_fg, mean_bg
-   * 输出的 log2FC adjusted_pval 都是显著值，因此可以根据前景信号和背景信号进行过滤
+   * 可以‘两两比较’或者‘一对多比较’
+   * 输出结果类似于基因差异表达分析，包含多个指标：log2FC, adjusted_pval, mean_fg, mean_bg, Motif_hit_thr,	Motif_hits
+   * 还可针对 **mean_fg, mean_bg, Motif_hit_thr** 设定阈值
+   * 如何理解 **Motif hits**：当input regions 某段区域与基序匹配，可以被认为是有效的“hit”，可以基于匹配得分对富集到的 motif 进行过滤，多滤掉匹配得分较低的区域
 
 
 
