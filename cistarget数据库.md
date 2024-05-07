@@ -1,15 +1,22 @@
 ## [cistarget数据库](https://resources.aertslab.org/cistarget/)
 ## [Rcistarget](https://bioconductor.riken.jp/packages/3.9/bioc/vignettes/RcisTarget/inst/doc/RcisTarget.html)
-## [pycistarget](https://pycistarget.readthedocs.io/en/latest/tools.html#)
+## [Pycistarget](https://pycistarget.readthedocs.io/en/latest/tools.html#)
+**Rcistarget 和 Pycistarget 软件本质上是在cistarget 数据库之上延伸出的 motif 富集分析方法**
+**学习顺序**
+1. cistarget 数据库
+2. 构建专属 cistarget 数据库
+3. Rcistarget
+4. Pycistarget
 
 
 
 ## cisTarget 数据库
-* 主要是一个利用已知转录因子motif序列信息，针对每一个motif（数量超过20k），利用**cluster-buster软件**检索人/小鼠/果蝇所有基因TSS位点上游500bp/上下游5kb/上下游10kb 区间范围
-* 按照所有基因检索序列与该motif序列结合的可能性的大小（**cbust软件输出的CRM scores**）进行排序，
-* 生成 **regions ranking-motif matrix文件**，该文件可以//通过Pycistarget软件用于基因序列motif富集分析**；
-* 将属于同一基因的regions合并，即可生成 **genes ranking-motif matrix 文件**，该文件可通过**Rcistarget包用于基因的motif富集分析**。
-* **其核心是region vs motif score matrix，和基于得分进一步排序得到的 region vs motif raning matrix**
+* **核心数据集 genes ranking-motif matrix 和 regions ranking-motif matrix** （也叫 genes vs motif ranking matrix 或 regions vs motif ranking matrix）
+* 主要是利用已知转录因子motif序列信息，针对每一个motif 基序（数量超过20k），利用**cluster-buster软件**检索人/小鼠/果蝇所有基因TSS位点上游500bp/上下游5kb/上下游10kb 区间范围
+* 按照所有基因检索序列与各 motif 序列结合的可能性的大小（**cbust软件输出的CRM scores**），对 genes 进行排序，生成 **genes ranking-motif matrix文件**，该文件可通过 **Rcistarget 软件针对特定基因集进行 motif 富集分析**；
+* 对特定基因组序列区间，计算与各 motif 序列结合的可能性的大小，并对 regions 排序，生成 **regison ranking-motif matrix文件**，该文件可通过**Pycistarget 软件对特定序列集进行 motif 富集分析**
+
+
   
 **以人为例：**
 * 检索生成的score文件：hg38_screen_v10_clust.regions_vs_motifs.scores.feather
