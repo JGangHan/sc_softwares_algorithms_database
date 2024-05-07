@@ -1,7 +1,12 @@
 ## [cistarget数据库](https://resources.aertslab.org/cistarget/)
 ## [Rcistarget](https://bioconductor.riken.jp/packages/3.9/bioc/vignettes/RcisTarget/inst/doc/RcisTarget.html)
-## [pycistarget](https://pycistarget.readthedocs.io/en/latest/tools.html#)
-
+## [Pycistarget](https://pycistarget.readthedocs.io/en/latest/tools.html#)
+**Rcistarget 和 Pycistarget 软件本质上是在cistarget 数据库之上延伸出的 motif 富集分析方法**
+**学习顺序**
+1. cistarget 数据库
+2. 构建专属 cistarget 数据库
+3. Rcistarget
+4. Pycistarget
 
 
 ## Rcistarget 分析流程
