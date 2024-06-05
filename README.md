@@ -39,7 +39,7 @@
 
 
 
-# 算法/
+# 算法/函数
 ## Jensen-Shannon divergency and distance, JS散度（JSD）和JS距离，可以用于计算两个向量空间距离或相似性，或基因表达/活性特异性    
 1. Jensen-Shannon 散度是一种流行的度量，用于衡量两个概率分布之间的相似性，其特征是对称性和有界性。
    *对称性指的是JSD(P||Q) = JSD(Q||P)，也就是无论如何交换两个分布的位置，计算结果相同；
@@ -71,7 +71,9 @@ ARI 是一种用于衡量**两个数据聚类结果相似性**的统计度量，
 
 
 
+# 数据库
+## [CZ Cell*Gene discovery](https://cellxgene.cziscience.com/docs/01__CellxGene) 人/小鼠单细胞数据库
+![image](https://github.com/JGangHan/sc_softwares_algorithms_database/assets/75400599/c0818727-321f-4cea-a214-86cabce9e3e9)
 
-
-
-
+1. 主要是作为一个各种单细胞测序数据的数据集合，非常庞大，可免费下载 .h5ad 格式和 .rds 格式处理后的单细胞数据
+2. 还提供各种网页工具探究基因表达，数据下载工具，注释工具
