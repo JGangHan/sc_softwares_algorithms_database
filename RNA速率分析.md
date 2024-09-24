@@ -6,7 +6,7 @@
    1.2 Seurat 导出目标 barcode 序列（clean cells，filtered_barcodes.tsv）  
    1.3 参考基因组 gtf 文件（cellranger 参考基因组制作步骤中生成的注释文件 genes.gtf 即可）
 2. **Seuurat 导出目标 barcode 序列**  
-**因为对原始测序数据比对后的 possorted_genome_bam.bam 文件包含所有的 barcode 序列，其中有的是空白 barcode，有的可能是低质量细胞或多细胞的barcode，如果不指定目标细胞 barcode， velocyto 软件默认会检索所有 barcode，从而浪费大量时间**  
+**因为对原始测序数据比对后的 possorted_genome_bam.bam 文件包含所有的 barcode 序列，其中有超级多空白 barcode，有的可能是低质量细胞或多细胞的barcode，如果不指定目标细胞 barcode， velocyto 软件默认会检索所有 barcode，从而浪费大量时间**  
 ```
 library(Seurat)
 ob.merge.rmdb = readRDS('ob.merge.rmdb.rds')
@@ -97,10 +97,10 @@ nohup velocyto run -v -b /data/hanjiangang/hanjiangang/single_Cell/velocity/filt
 nohup velocyto run -v -b /data/hanjiangang/hanjiangang/single_Cell/velocity/filtered_bc/E80_filtered_barcodes.tsv -e E80 -o /data/hanjiangang/hanjiangang/single_Cell/velocity/velocyto_loom /data/hanjiangang/hanjiangang/single_Cell/data/sc_RNA/E80_200474/outs/possorted_genome_bam.bam /data/hanjiangang/hanjiangang/single_Cell/ref_ovis/genes.gtf > /data/hanjiangang/hanjiangang/single_Cell/velocity/log/velocyto_E80.txt &
 ```
 
-## 4. scvelo 步骤
-**需要将 seurat (R) 对目标细胞的注释信息整合到 anndata (python) 对象中**  
+## 4. 数据预处理
+**为了保证最终结果的一致性，比如提取指定细胞类型、保证各细胞空间分布，必须将 seurat (R) 对目标细胞的注释信息整合到 anndata (python) 对象中**  
 ### 4.1 barcode 序列修正，seurat 注释结果， umap 位置结果导出  
-**velocyto 分析中会对细胞 barcode 序列进行二次编辑，所以将 seurate barcode 序列对齐到 loom barcode**  
+**velocyto 分析中会对细胞 barcode 序列进行二次处理，所以后续需要将 seurate barcode 序列对齐到 loom barcode**  
 **ACAGAAATCAAACGTC-1_1 (seurat对象) >>>  E50:ACAGAAATCAAACGTC-1 (anndata 对象)**  
 ```
 # R
@@ -151,14 +151,14 @@ sample_E75 = anndata.read_loom("/data/hanjiangang/hanjiangang/single_Cell/veloci
 sample_E80 = anndata.read_loom("/data/hanjiangang/hanjiangang/single_Cell/velocity/velocyto_loom/E80.loom")
 ```
 
-### 4.3 多样本合并
+### 4.3 多样本合并，测试数据
 **因为少数基因（列名）不是唯一出现，同时出现多次，所以合并数据之前需要处理这些基因id**
-多样本需要先进行代码测试
+多样本最好先进行代码测试，多样本合并总是报错，最后发现存在多个相同的 gene symbol
 ```
 a= sample_E50
 b=sample_E55
 
-# 检查是否存在重复基因
+# 1. 检查是否存在重复基因
 a.var_names.is_unique
 # 哪些重复基因
 gene_counts = a.var_names.value_counts()
@@ -168,11 +168,9 @@ duplicate_genes.shape()
 # 打印重复基因及其出现次数
 print(duplicate_genes)
 
-# 对重复基因重新编号
-# a
+# 2. a: 对重复基因重新编号
 unique_genes = {}  # 创建一个空字典，用于存储基因名及其出现次数
 new_var_names = []  # 创建一个空列表，用于存储新的基因名
-
 for gene in a.var_names:
     # 检查当前基因名是否已经在 unique_genes 字典中
     if gene not in unique_genes:
@@ -186,8 +184,7 @@ for gene in a.var_names:
 # 更新 AnnData 对象中的 var_names，将新生成的基因名列表赋值给 a.var_names
 a.var_names = new_var_names
 
-
-# b
+# 3. b: 对重复基因重新编号
 unique_genes = {}  # 创建一个空字典，用于存储基因名及其出现次数
 new_var_names = []  # 创建一个空列表，用于存储新的基因名
 for gene in b.var_names:
@@ -199,34 +196,26 @@ for gene in b.var_names:
         unique_genes[gene] += 1  # 如果在，出现次数加 1
         # 将基因名重命名为 "基因名_出现次数" 的格式，并添加到新列表中
         new_var_names.append(f"{gene}_{unique_genes[gene]}")
-
 # 更新 AnnData 对象中的 var_names，将新生成的基因名列表赋值给 a.var_names
 b.var_names = new_var_names
 
-# 检查是否相同
+# 4. 检查ab基因排序是否相同
 set(a.var_names) == set(b.var_names)
 a.var_names.equals(b.var_names)
  
-# 合并
+# 5. 成功合并
 samples = [a, b]
 c = anndata.concat(samples, join='outer', label='batch', keys=['a', 'b'])
 c = anndata.concat(samples, join='inner', label='batch', keys=['a', 'b'])
-
-
-
-
-
-
-
 ```
 
 
-
-
+### 4.4 多样本合并，9个正式样本
+```
 # 9 个对象构建列表
 samples = [sample_E50, sample_E55, sample_E60, sample_E63, sample_E66, sample_E69, sample_E72, sample_E75, sample_E80]
 
-# 定义一个函数来处理每个 AnnData 对象的重复基因
+# 定义一个函数来处理每个样本数据（AnnData 对象）的重复基因
 def rename_duplicate_genes(adata):
     unique_genes = {}  # 创建一个字典用于存储基因及其出现次数
     new_var_names = []  # 创建一个列表用于存储新的基因名
@@ -245,47 +234,53 @@ def rename_duplicate_genes(adata):
 for adata in samples:
     rename_duplicate_genes(adata)  # 调用函数处理 var_names
 
+# 合并
 ob_merge = anndata.concat(samples, join='outer', label='batch', keys=['E50', 'E55', 'E60', 'E63', 'E66', 'E69', 'E72', 'E75', 'E80'])
-ob_merge.obs.index
+ob_merge.obs.index  # 20477*43557，与 seurat 中的数据维度相同
+```
 
 
-# 目标细胞
+### 4.5 seurat 细胞信息整合
+1. 先检查 seurat 细胞和 anndata 细胞是否一致并对其
+2. 添加 umap 结果（如果涉及不同细胞子集的重新构图，为保证异质性，后续需要在子集中更新 umap 数据）
+3. 添加细胞注释结果
+```
+# 1. 检查数据是否一致
+# seurat 目标细胞（4.1步骤）
 target = cell_id["cell_id"]
-# 筛选合并后的 AnnData 对象，基于 cell_ids_column 中的值
 ob_merge = ob_merge[np.isin(ob_merge.obs.index, target)]
 
+# 2. 提取 UMAP 信息，并对其细胞排列顺序
 ob_merge_index = pd.DataFrame(ob_merge.obs.index) # CellID
 ob_merge_index = ob_merge_index.rename(columns={'CellID': 'cell_id'})
-
-
-# 提取 metadata 中的 'UMAP_1', 'UMAP_2', 和 'cell_id' 列
+# umap 子集
 umap = cell_id[['UMAP_1', 'UMAP_2', 'cell_id']]
-
-# 根据 ob_merge_index 中的 cell_id 顺序对 metadata 进行过滤和排序
-# 首先将 metadata 中的 cell_id 过滤，确保它们在 ob_merge_index 中
+# 检查是否一致
 umap = umap[umap['cell_id'].isin(ob_merge_index['cell_id'])]
-
-# 根据 ob_merge_index 中的 cell_id 进行排序（使用 merge 操作保持顺序）
+# 对其顺序
 umap_ordered = ob_merge_index.merge(umap, on='cell_id')
 set(umap_ordered[['cell_id']]) == set(ob_merge_index[['cell_id']])  # 检查顺序
-
-# 此时 metadata_ordered 包含按 ob_merge_index 顺序排列的 'UMAP_1' 和 'UMAP_2'
+# 仅保留 UMAP_1 和 UMAP_2 两列
 umap_ordered = umap_ordered[['UMAP_1', 'UMAP_2']]
 
+# 3. 添加 UMAP 信息
 ob_merge.obsm['X_umap'] = umap_ordered.values
 ob_merge.obsm
 
-
-
-# 添加 celltype 注释信息
+# 4. 添加 celltype 注释信息
 celltype = cell_id[['celltype_final', 'cell_id']]
 celltype = celltype[celltype['cell_id'].isin(ob_merge_index['cell_id'])]
-celltype_ordered = ob_merge_index.merge(celltype, on='cell_id')
+celltype_ordered = ob_merge_index.merge(celltype, on='cell_id')  # 保证细胞顺序一致
 set(celltype_ordered[['cell_id']]) == set(ob_merge_index[['cell_id']])  # 检查顺序
-
-# 此时 metadata_ordered 包含按 ob_merge_index 顺序排列的 'UMAP_1' 和 'UMAP_2'
+# 仅保留一列
 celltype_ordered = celltype_ordered[['celltype_final']]
+# 添加细胞注释结果
 ob_merge.obs['celltype'] = celltype_ordered.iloc[:, 0].values
+```
+
+
+### 5. scvelo RNA速率分析
+
 
 
 # 提取子集
@@ -298,9 +293,6 @@ scv.pp.moments(example)
 scv.tl.velocity(example, mode = "stochastic")
 scv.tl.velocity_graph(example)
 
-
-
-```
 
 ## scvelo RNA速率分析
 scv.pp.filter_and_normalize(ob_merge)
