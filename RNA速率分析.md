@@ -302,8 +302,45 @@ scv.pp.log1p(adata)
 scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
 scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
 scv.tl.velocity(adata)
-scv.tl.velocity_graph(example)
+scv.tl.velocity_graph(adata)
 
+scv.pl.velocity_embedding(adata, arrow_length=3, arrow_size=2, dpi=120)
+plt.savefig('embedding.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+scv.pl.velocity_embedding_stream(adata, basis='umap')
+plt.savefig('embedding_stream.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+
+
+
+
+adata = ad.read('./example.h5ad')
+scv.pp.filter_genes(adata, min_shared_counts=20)
+scv.pp.normalize_per_cell(adata)
+scv.pp.filter_genes_dispersion(adata, n_top_genes=2000)
+scv.pp.log1p(adata)
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+
+scv.pl.velocity_embedding(adata, arrow_length=3, arrow_size=2, dpi=120)
+plt.savefig('embedding_example.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+scv.pl.n
+
+(adata, basis='umap')
+plt.savefig('embedding_stream_example.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+
+
+
+
+scv.pl.velocity_embedding(adata, arrow_length=3, arrow_size=2, dpi=120)
 
 ob_merge = ad.read('./ob_merge_second.h5ad')
 
