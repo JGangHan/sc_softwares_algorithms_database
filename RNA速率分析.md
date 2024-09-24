@@ -31,7 +31,7 @@ for (i in samplename) {
 [velocyto官网教程](https://github.com/velocyto-team/velocyto-notebooks/blob/master/python/DentateGyrus.ipynb)  
 [scVelo在python3.10环境下的安装及使用](https://github.com/PrinceWang2018/scvelo_py3.10?tab=readme-ov-file)  
 [基于Seurat UAMP和celltype的RNA Velocity速率分析的全套流程](https://www.jianshu.com/p/c33341b65cad)  
-
+[scVelo 官网](https://scvelo.readthedocs.io/en/stable/VelocityBasics.html#)
 
 
 ## 2. 软件安装
@@ -237,6 +237,8 @@ for adata in samples:
 # 合并
 ob_merge = anndata.concat(samples, join='outer', label='batch', keys=['E50', 'E55', 'E60', 'E63', 'E66', 'E69', 'E72', 'E75', 'E80'])
 ob_merge.obs.index  # 20477*43557，与 seurat 中的数据维度相同
+ob_merge.write('./ob_merge_first.h5ad')
+a = anndata.read('./ob_merge_first.h5ad')
 ```
 
 
@@ -257,7 +259,7 @@ ob_merge_index = ob_merge_index.rename(columns={'CellID': 'cell_id'})
 umap = cell_id[['UMAP_1', 'UMAP_2', 'cell_id']]
 # 检查是否一致
 umap = umap[umap['cell_id'].isin(ob_merge_index['cell_id'])]
-# 对其顺序
+# 对齐顺序
 umap_ordered = ob_merge_index.merge(umap, on='cell_id')
 set(umap_ordered[['cell_id']]) == set(ob_merge_index[['cell_id']])  # 检查顺序
 # 仅保留 UMAP_1 和 UMAP_2 两列
@@ -270,22 +272,53 @@ ob_merge.obsm
 # 4. 添加 celltype 注释信息
 celltype = cell_id[['celltype_final', 'cell_id']]
 celltype = celltype[celltype['cell_id'].isin(ob_merge_index['cell_id'])]
-celltype_ordered = ob_merge_index.merge(celltype, on='cell_id')  # 保证细胞顺序一致
-set(celltype_ordered[['cell_id']]) == set(ob_merge_index[['cell_id']])  # 检查顺序
+celltype_ordered = ob_merge_index.merge(celltype, on='cell_id')  # 排序
+set(celltype_ordered['cell_id']) == set(ob_merge_index['cell_id']) # 检查顺序
+set(ob_merge_index['cell_id']) == set(ob_merge.obs.index) # 排序
+
 # 仅保留一列
 celltype_ordered = celltype_ordered[['celltype_final']]
+
 # 添加细胞注释结果
 ob_merge.obs['celltype'] = celltype_ordered.iloc[:, 0].values
+
+# 5. 数据保存
+ob_merge.write('./ob_merge_second.h5ad')
 ```
 
 
 ### 5. scvelo RNA速率分析
+import anndata as ad
+import scvelo as scv
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+adata = scv.datasets.pancreas()
+scv.pp.filter_genes(adata, min_shared_counts=20)
+scv.pp.normalize_per_cell(adata)
+scv.pp.filter_genes_dispersion(adata, n_top_genes=2000)
+scv.pp.log1p(adata)
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(example)
 
 
+ob_merge = ad.read('./ob_merge_second.h5ad')
+
+# 默认图片参数
+scv.set_figure_params()
+scv.logging.print_version()
+# scv.settings.verbosity = 3  # show errors(0), warnings(1), info(2), hints(3)
+scv.settings.presenter_view = True  # set max width size for presenter view
+scv.set_figure_params('scvelo')  # for beautified visualization
 
 # 提取子集
 ob_merge.obs['celltype'].value_counts()
 example = ob_merge[ob_merge.obs['celltype'].isin(['PSC_C3', 'VSMC_C1', 'VSMC_C2']), :]
+del ob_merge
+ob_merge
 
 ## scvelo RNA速率分析
 scv.pp.filter_and_normalize(example)
@@ -294,11 +327,117 @@ scv.tl.velocity(example, mode = "stochastic")
 scv.tl.velocity_graph(example)
 
 
+
+adata = scv.datasets.pancreas()
+example = scv.datasets.pancreas()
+adata
+adata = example
+
+scv.pl.proportions(adata)
+plt.savefig('proportions_plot_example.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+
+adata.write('./example.h5ad')
+
+
+import anndata as ad
+import scvelo as scv
+import pandas as pd
+import numpy as np
+adata = ad.read('./example.h5ad')
+scv.pp.filter_and_normalize(adata)
+scv.pp.moments(adata)
+scv.tl.velocity(adata, mode = "stochastic")
+scv.tl.velocity_graph(adata)
+scv.tl.velocity_graph(example)
+
+
+
+
+
+
+
+
+import os
+import numpy as np
+from scipy.sparse import coo_matrix, issparse
+from scvelo import logging as logg
+from scvelo import settings
+from scvelo.core import get_n_jobs, parallelize
+from scvelo.preprocessing.neighbors import verify_neighbors, neighbors, get_neighs, get_n_neighs
+from scvelo.preprocessing import neighbors
+from scvelo.preprocessing.moments import get_moments
+from scvelo.utils import cosine_correlation, get_indices, get_iterative_indices
+from scvelo.tools import velocity
+sqrt_transform = None
+variance_stabilization = None
+
+
+
+ 获取邻居索引
+if n_neighbors is None or n_neighbors <= get_n_neighs(adata):
+    indices = get_indices(
+        dist=get_neighs(adata, "distances"),
+        n_neighbors=n_neighbors,
+        mode_neighbors=mode_neighbors,
+    )[0]
+else:
+    if basis is None:
+        basis_keys = ["X_pca", "X_tsne", "X_umap"]
+        basis = [key for key in basis_keys if key in adata.obsm.keys()][-1]
+    elif f"X_{basis}" in adata.obsm.keys():
+        basis = f"X_{basis}"
+    if isinstance(approx, str) and approx in adata.obsm.keys():
+        from sklearn.neighbors import NearestNeighbors
+        neighs = NearestNeighbors(n_neighbors=n_neighbors + 1)
+        neighs.fit(adata.obsm[approx])
+        indices = neighs.kneighbors_graph(
+            mode="connectivity"
+        ).indices.reshape((-1, n_neighbors + 1))
+    else:
+        neighs = Neighbors(adata)
+        neighs.compute_neighbors(
+            n_neighbors=n_neighbors, use_rep=basis, n_pcs=10
+        )
+        indices = get_indices(
+            dist=neighs.distances, mode_neighbors=mode_neighbors
+        )[0]
+
+
+
+
+
+
+
+
+
+
+
+
+# spliced/unspliced的比例
+scv.pl.proportions(adata)
+
+# plot
+scv.pl.velocity_embedding(adata, basis = 'umap')
+scv.pl.velocity_embedding_stream(adata, basis = 'umap')
+
 ## scvelo RNA速率分析
+# 预处理1
 scv.pp.filter_and_normalize(ob_merge)
 scv.pp.moments(ob_merge)
 scv.tl.velocity(ob_merge, mode = "stochastic")
 scv.tl.velocity_graph(ob_merge)
+
+# 预处理2
+scv.pp.filter_genes(adata, min_shared_counts=20)
+scv.pp.normalize_per_cell(adata)
+scv.pp.filter_genes_dispersion(adata, n_top_genes=2000)
+scv.pp.log1p(adata)
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+
+
 
 # spliced/unspliced的比例
 scv.pl.proportions(adata)
@@ -312,7 +451,15 @@ scv.pl.velocity_embedding_stream(adata, basis = 'umap')
 
 
 
-
+    headers = {
+        "Content-Type": "application/json;charset=UTF-8",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+    }
+    try:
+        res = requests.post("url", json=req, headers=headers)
+    except Exception as e:
+        print(e)
+        pass
 
 
 
