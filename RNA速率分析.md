@@ -701,6 +701,7 @@ scv.tl.velocity_graph(adata)
 ```
 
 ### 8. scvelo RNA速率分析，正式分析
+# 
 ```
 adata = scvelo_adipo
 # 1. 数据预处理，下边两行包含所有数据预处理步骤
@@ -736,9 +737,187 @@ plt.close()
 
 
 
+**monocle: adipo_psc_c4**
+'PSC_C4', 'CTP_C2', 'CTP_C3', 'VSMC_C2', 'Preadipocyte', 'Adipocyte'
+```
+# 1. 提取子集
+ob_merge = ad.read('./ob_merge_second.h5ad')
+ob_merge.obs['celltype'].value_counts()
+scvelo_adipo_psc4 = ob_merge[ob_merge.obs['celltype'].isin(["PSC_C4", "Preadipocyte", "Adipocyte"]), :]
+scvelo_adipo_psc4.obs['celltype'].value_counts()
+
+scvelo_adipo_ctp = ob_merge[ob_merge.obs['celltype'].isin(['CTP_C2', 'CTP_C3', "Preadipocyte", "Adipocyte"]), :]
+scvelo_adipo_ctp.obs['celltype'].value_counts()
+
+scvelo_adipo_vsmc = ob_merge[ob_merge.obs['celltype'].isin(["VSMC_C2", "Preadipocyte", "Adipocyte"]), :]
+scvelo_adipo_vsmc.obs['celltype'].value_counts()
+
+
+del ob_merge # 删除，不然会发生内存报错
+
+# 2. 添加 umap 信息
+# R code
+
+
+# python code
+cp /home/hanjiangang/trajectory_analysis/monocle/adipo/psc_pre/monocle_adipo_psc4_scvelo_umap.csv /data/hanjiangang/hanjiangang/single_Cell/velocity/monocle_adipo_psc4_scvelo_umap.csv
+
+cp /home/hanjiangang/trajectory_analysis/monocle/adipo/ctp_pre/monocle_adipo_ctp_scvelo_umap.csv /data/hanjiangang/hanjiangang/single_Cell/velocity/monocle_adipo_ctp_scvelo_umap.csv
+
+cp /home/hanjiangang/trajectory_analysis/monocle/adipo/vsmc_pre/monocle_adipo_vsmc_scvelo_umap.csv /data/hanjiangang/hanjiangang/single_Cell/velocity/monocle_adipo_vsmc_scvelo_umap.csv
+
+####################################### psc_c4 ########################################
+scvelo_umap_adipo_psc = pd.read_csv("./monocle_adipo_psc4_scvelo_umap.csv")
+scvelo_umap = scvelo_umap_adipo_psc
+scvelo_umap
+scvelo_adipo_psc4
+target = scvelo_umap["cell_id"]
+scvelo_adipo_psc4 = scvelo_adipo_psc4[np.isin(scvelo_adipo_psc4.obs.index, target)] # 检查细胞 id
+scvelo_adipo_psc4_index = pd.DataFrame(scvelo_adipo_psc4.obs.index) # CellID
+scvelo_adipo_psc4_index = scvelo_adipo_psc4_index.rename(columns={'CellID': 'cell_id'})
+scvelo_umap = scvelo_umap[scvelo_umap['cell_id'].isin(scvelo_adipo_psc4_index['cell_id'])] # 二次检查细胞 id
+scvelo_umap_ordered = scvelo_adipo_psc4_index.merge(scvelo_umap, on='cell_id')
+set(scvelo_umap_ordered[['cell_id']]) == set(scvelo_adipo_psc4_index[['cell_id']])  # 检查顺序
+scvelo_adipo_psc4.obs.index
+scvelo_umap_ordered
+scvelo_umap_ordered = scvelo_umap_ordered[['UMAP_1', 'UMAP_2']]
+scvelo_adipo_psc4.obsm['X_umap'] = scvelo_umap_ordered.values
+scvelo_adipo_psc4.obsm['X_umap'] 
+scvelo_adipo_psc4.write('./scvelo_adipo_psc4_first.h5ad')
+
+# 3. 数据预处理
+adata = scvelo_adipo_psc4
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+adata.write('./scvelo_adipo_psc4_second.h5ad')
+
+# 4. 速率分析
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+adata.write('./scvelo_adipo_psc4_third.h5ad')
+
+scv.pl.velocity_embedding(adata, color='celltype', arrow_length=3, arrow_size=2, dpi=120)
+plt.savefig('adipo_psc4_embedding_cell.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype')
+plt.savefig('adipo_psc4_embedding_stream.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+
+
+
+####################################### ctp ########################################
+scvelo_umap_adipo_ctp = pd.read_csv("./monocle_adipo_ctp_scvelo_umap.csv")
+scvelo_umap = scvelo_umap_adipo_ctp
+scvelo_umap
+scvelo_adipo_ctp
+target = scvelo_umap["cell_id"]
+scvelo_adipo_ctp = scvelo_adipo_ctp[np.isin(scvelo_adipo_ctp.obs.index, target)] # 检查细胞 id
+scvelo_adipo_ctp_index = pd.DataFrame(scvelo_adipo_ctp.obs.index) # CellID
+scvelo_adipo_ctp_index = scvelo_adipo_ctp_index.rename(columns={'CellID': 'cell_id'})
+scvelo_umap = scvelo_umap[scvelo_umap['cell_id'].isin(scvelo_adipo_ctp_index['cell_id'])] # 二次检查细胞 id
+scvelo_umap_ordered = scvelo_adipo_ctp_index.merge(scvelo_umap, on='cell_id')
+set(scvelo_umap_ordered[['cell_id']]) == set(scvelo_adipo_ctp_index[['cell_id']])  # 检查顺序
+scvelo_adipo_ctp.obs.index
+scvelo_umap_ordered
+scvelo_umap_ordered = scvelo_umap_ordered[['UMAP_1', 'UMAP_2']]
+scvelo_adipo_ctp.obsm['X_umap'] = scvelo_umap_ordered.values
+scvelo_adipo_ctp.obsm['X_umap'] 
+scvelo_adipo_ctp.write('./scvelo_adipo_ctp_first.h5ad')
+
+# 3. 数据预处理
+adata = scvelo_adipo_ctp
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+adata.write('./scvelo_adipo_ctp_second.h5ad')
+
+# 4. 速率分析
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+adata.write('./scvelo_adipo_ctp_third.h5ad')
+
+scv.pl.velocity_embedding(adata, color='celltype', arrow_length=3, arrow_size=2, dpi=120)
+plt.savefig('adipo_ctp_embedding_cell.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype')
+plt.savefig('adipo_ctp_embedding_stream.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+
+
+####################################### vsmc ########################################
+scvelo_umap_adipo_vsmc = pd.read_csv("./monocle_adipo_vsmc_scvelo_umap.csv")
+scvelo_umap = scvelo_umap_adipo_vsmc
+scvelo_umap
+scvelo_adipo_vsmc
+target = scvelo_umap["cell_id"]
+scvelo_adipo_vsmc = scvelo_adipo_vsmc[np.isin(scvelo_adipo_vsmc.obs.index, target)] # 检查细胞 id
+scvelo_adipo_vsmc_index = pd.DataFrame(scvelo_adipo_vsmc.obs.index) # CellID
+scvelo_adipo_vsmc_index = scvelo_adipo_vsmc_index.rename(columns={'CellID': 'cell_id'})
+scvelo_umap = scvelo_umap[scvelo_umap['cell_id'].isin(scvelo_adipo_vsmc_index['cell_id'])] # 二次检查细胞 id
+scvelo_umap_ordered = scvelo_adipo_vsmc_index.merge(scvelo_umap, on='cell_id')
+set(scvelo_umap_ordered[['cell_id']]) == set(scvelo_adipo_vsmc_index[['cell_id']])  # 检查顺序
+scvelo_adipo_vsmc.obs.index
+scvelo_umap_ordered
+scvelo_umap_ordered = scvelo_umap_ordered[['UMAP_1', 'UMAP_2']]
+scvelo_adipo_vsmc.obsm['X_umap'] = scvelo_umap_ordered.values
+scvelo_adipo_vsmc.obsm['X_umap'] 
+scvelo_adipo_vsmc.write('./scvelo_adipo_vsmc_first.h5ad')
+
+# 3. 数据预处理
+adata = scvelo_adipo_vsmc
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+adata.write('./scvelo_adipo_vsmc_second.h5ad')
+
+# 4. 速率分析
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+adata.write('./scvelo_adipo_vsmc_third.h5ad')
+
+scv.pl.velocity_embedding(adata, color='celltype', arrow_length=3, arrow_size=2, dpi=120)
+plt.savefig('adipo_vsmc_embedding_cell.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype')
+plt.savefig('adipo_vsmc_embedding_stream.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### 9. scvelo RNA速率分析，正式分析，其他细胞类型
-**1. osteo-chondro**
+**1. seurat: osteo-chondro**
 ```
 # 1. 提取子集
 ob_merge = ad.read('./ob_merge_second.h5ad')
@@ -774,7 +953,6 @@ scv.tl.velocity(adata)
 scv.tl.velocity_graph(adata)
 adata.write('./scvelo_adipo_third.h5ad')
 
-
 scv.pl.velocity_embedding(adata, color='celltype', arrow_length=3, arrow_size=2, dpi=120)
 plt.savefig('osch_embedding_cell.png', dpi=300, bbox_inches='tight')
 plt.close()
@@ -785,7 +963,12 @@ plt.close()
 
 ```
 
-**2. myo**
+**2. monocle: osteo**
+
+
+
+
+**2. seurat: myo**
 ```
 # 1. 提取子集
 ob_merge = ad.read('./ob_merge_second.h5ad')
@@ -823,13 +1006,66 @@ adata.write('./scvelo_myo_third.h5ad')
 
 
 scv.pl.velocity_embedding(adata, color='celltype', arrow_length=3, arrow_size=2, dpi=120)
-plt.savefig('osch_embedding_cell.png', dpi=300, bbox_inches='tight')
+plt.savefig('myo_embedding_cell.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype')
-plt.savefig('osch_embedding_stream.png', dpi=300, bbox_inches='tight')
+plt.savefig('myo_embedding_stream.png', dpi=300, bbox_inches='tight')
+plt.close()
+```
+
+
+
+
+
+
+**3. monocle: vsmc**
+```
+# 1. 提取子集
+ob_merge = ad.read('./ob_merge_second.h5ad')
+ob_merge.obs['celltype'].value_counts()
+scvelo_vsmc = ob_merge[ob_merge.obs['celltype'].isin(["PSC_C3", "VSMC_C1", "VSMC_C2"]), :]
+scvelo_vsmc.obs['celltype'].value_counts()
+del ob_merge # 删除，不然会发生内存报错
+
+# 2. 添加 umap 信息
+cp /home/hanjiangang/trajectory_analysis/monocle/vascular/monocle_vsmc_scvelo_umap.csv /data/hanjiangang/hanjiangang/single_Cell/velocity/monocle_vsmc_scvelo_umap.csv 
+scvelo_umap_vsmc = pd.read_csv("./monocle_vsmc_scvelo_umap.csv")
+scvelo_umap = scvelo_umap_vsmc
+scvelo_vsmc
+target = scvelo_umap["cell_id"]
+scvelo_vsmc = scvelo_vsmc[np.isin(scvelo_vsmc.obs.index, target)] # 检查细胞 id
+scvelo_vsmc_index = pd.DataFrame(scvelo_vsmc.obs.index) # CellID
+scvelo_vsmc_index = scvelo_vsmc_index.rename(columns={'CellID': 'cell_id'})
+scvelo_umap = scvelo_umap[scvelo_umap['cell_id'].isin(scvelo_vsmc_index['cell_id'])] # 二次检查细胞 id
+scvelo_umap_ordered = scvelo_vsmc_index.merge(scvelo_umap, on='cell_id')
+set(scvelo_umap_ordered[['cell_id']]) == set(scvelo_vsmc_index[['cell_id']])  # 检查顺序
+scvelo_vsmc.obs.index
+scvelo_umap_ordered
+scvelo_umap_ordered = scvelo_umap_ordered[['UMAP_1', 'UMAP_2']]
+scvelo_vsmc.obsm['X_umap'] = scvelo_umap_ordered.values
+scvelo_vsmc.obsm['X_umap'] 
+scvelo_vsmc.write('./scvelo_vsmc_first.h5ad')
+
+# 3. 数据预处理
+adata = scvelo_vsmc
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+adata.write('./scvelo_vsmc_second.h5ad')
+
+# 4. 速率分析
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+adata.write('./scvelo_vsmc_third.h5ad')
+
+
+scv.pl.velocity_embedding(adata, color='celltype', arrow_length=3, arrow_size=2, dpi=120)
+plt.savefig('vsmc_embedding_cell.png', dpi=300, bbox_inches='tight')
 plt.close()
 
+scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype')
+plt.savefig('vsmc_embedding_stream.png', dpi=300, bbox_inches='tight')
+plt.close()
 ```
 
 
