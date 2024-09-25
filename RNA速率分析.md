@@ -618,7 +618,7 @@ def velocity_graph(
     return adata if copy else None
 ```
 
-### 6. scvelo RNA速率分析，adipo + seurat UMAP 坐标  
+### 6. scvelo RNA速率分析，数据准备
 1. python：ob_merge 提取 "PSC_C4", "CTP_C2", "CTP_C3", "VSMC_C2", "Preadipocyte","Adipocyte"  
 ```
 # python
@@ -652,7 +652,7 @@ scvelo_umap$cell_id<-sapply(row.names(scvelo_umap),
 scvelo_umap$cell_id<-paste(scvelo_umap$samplename,
                            scvelo_umap$cell_id,sep = ":")
 # 保存
-write.csv(scvelo_umap, file = "scvelo_umap.csv", row.names = FALSE)
+write.csv(scvelo_umap, file = "adipo_scvelo_umap.csv", row.names = FALSE)
 ```
 
 3. seurat UMAP 坐标添加到 anndata 中  
@@ -680,153 +680,122 @@ scvelo_umap_ordered = scvelo_umap_ordered[['UMAP_1', 'UMAP_2']]
 # 4. 添加 UMAP 信息
 scvelo_adipo.obsm['X_umap'] = scvelo_umap_ordered.values
 scvelo_adipo.obsm
+scvelo_adipo.write('./scvelo_adipo_first.h5ad')
 ```
 
-4. RNA 速率分析
+### 7. scvelo RNA速率分析，示例数据测试
 **最好先跑一遍示例数据，看看能不能跑通**
-
-
+```
+# 示例数据
 adata = scv.datasets.pancreas()
+# 数据预处理
 scv.pp.filter_genes(adata, min_shared_counts=20)
 scv.pp.normalize_per_cell(adata)
 scv.pp.filter_genes_dispersion(adata, n_top_genes=2000)
 scv.pp.log1p(adata)
 scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
 scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+# 速率分析
 scv.tl.velocity(adata)
 scv.tl.velocity_graph(adata)
-# 
-scv.pl.velocity_embedding(adata, arrow_length=3, arrow_size=2, dpi=120)
-plt.savefig('embedding.png', dpi=300, bbox_inches='tight')
-plt.close()
+```
 
-scv.pl.velocity_embedding_stream(adata, basis='umap')
-plt.savefig('embedding_stream.png', dpi=300, bbox_inches='tight')
-plt.close()
-
-
-
-
-
-adata = ad.read('./example.h5ad')
-scv.pp.filter_genes(adata, min_shared_counts=20)
-scv.pp.normalize_per_cell(adata)
-scv.pp.filter_genes_dispersion(adata, n_top_genes=2000)
-scv.pp.log1p(adata)
+### 8. scvelo RNA速率分析，正式分析
+```
+adata = scvelo_adipo
+# 1. 数据预处理，下边两行包含所有数据预处理步骤
 scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
 scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+adata.write('./scvelo_adipo_second.h5ad')
+
+# 2. 速率分析
 scv.tl.velocity(adata)
 scv.tl.velocity_graph(adata)
+adata.write('./scvelo_adipo_third.h5ad')
 
-scv.pl.velocity_embedding(adata, arrow_length=3, arrow_size=2, dpi=120)
-plt.savefig('embedding_example.png', dpi=300, bbox_inches='tight')
+# 3. UMAP projection，略过
+## 因为之前 seurat 数据预处理步骤已经进行了 UMAP 分析，直接使用 UMAP 结果
+## 如果不需要已有的 UMAP 坐标，或重新 UMAP 分析，运行下方命令
+scv.tl.umap
+scv.tl.louvain
+
+# 4. 作图
+## 
+## 提供三种形式的作图：single cell(单个细胞加上小箭头), gridlines, streamlines
+
+scv.pl.velocity_embedding(adata, color='celltype', arrow_length=3, arrow_size=2, dpi=120)
+plt.savefig('adipo_embedding_cell.png', dpi=300, bbox_inches='tight')
 plt.close()
 
-scv.pl.n
-
-(adata, basis='umap')
-plt.savefig('embedding_stream_example.png', dpi=300, bbox_inches='tight')
+scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype')
+plt.savefig('adipo_embedding_stream.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 
+```
 
 
 
-scv.pl.velocity_embedding(adata, arrow_length=3, arrow_size=2, dpi=120)
 
-ob_merge = ad.read('./ob_merge_second.h5ad')
+### 9. scvelo RNA速率分析，正式分析，其他细胞类型
+scvelo_osch = ob_merge[ob_merge.obs['celltype'].isin(["PSC_C2", "PSC_C6", "CTP_C1", "CTP_C2", "CTP_C3", "Preosteoblast", "Osteoblast", "Prechondrocyte", "Chondrocyte_C1", "Chondrocyte_C2"]), :]
+scvelo_osch.obs['celltype'].value_counts()
+scvelo_umap_osch = pd.read_csv("./osch_scvelo_umap.csv")
+scvelo_umap = scvelo_umap_osch
+scvelo_adipo
+
+# 2. 检查cell id是否一致
+target = scvelo_umap["cell_id"]
+scvelo_osch = scvelo_osch[np.isin(scvelo_osch.obs.index, target)]
+
+# 3. 提取 UMAP 信息，并对其细胞排列顺序
+## 二次检查细胞 id
+scvelo_osch_index = pd.DataFrame(scvelo_osch.obs.index) # CellID
+scvelo_osch_index = scvelo_osch_index.rename(columns={'CellID': 'cell_id'})
+scvelo_umap = scvelo_umap[scvelo_umap['cell_id'].isin(scvelo_osch_index['cell_id'])]
+## 对齐顺序
+scvelo_umap_ordered = scvelo_osch_index.merge(scvelo_umap, on='cell_id')
+set(scvelo_umap_ordered[['cell_id']]) == set(scvelo_osch_index[['cell_id']])  # 检查顺序
+# 仅保留 UMAP_1 和 UMAP_2 两列
+scvelo_umap_ordered = scvelo_umap_ordered[['UMAP_1', 'UMAP_2']]
+
+# 4. 添加 UMAP 信息
+scvelo_osch.obsm['X_umap'] = scvelo_umap_ordered.values
+scvelo_osch.obsm
+scvelo_osch.write('./scvelo_oscho_first.h5ad')
+
+adata = scvelo_osch
+# 1. 数据预处理，下边两行包含所有数据预处理步骤
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+adata.write('./scvelo_adipo_second.h5ad')
+
+# 2. 速率分析
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+adata.write('./scvelo_adipo_third.h5ad')
+
+
+
+
+
+
+
+
+
+
 
 # 默认图片参数
 scv.set_figure_params()
 scv.logging.print_version()
-# scv.settings.verbosity = 3  # show errors(0), warnings(1), info(2), hints(3)
 scv.settings.presenter_view = True  # set max width size for presenter view
 scv.set_figure_params('scvelo')  # for beautified visualization
-
-# 提取子集
-ob_merge.obs['celltype'].value_counts()
-example = ob_merge[ob_merge.obs['celltype'].isin(['PSC_C3', 'VSMC_C1', 'VSMC_C2']), :]
-del ob_merge
-ob_merge
-
-## scvelo RNA速率分析
-scv.pp.filter_and_normalize(example)
-scv.pp.moments(example)
-scv.tl.velocity(example, mode = "stochastic")
-scv.tl.velocity_graph(example)
-
-
-
-adata = scv.datasets.pancreas()
-example = scv.datasets.pancreas()
-adata
-adata = example
-
-scv.pl.proportions(adata)
-plt.savefig('proportions_plot_example.png', dpi=300, bbox_inches='tight')
-plt.close()
-
-
-adata.write('./example.h5ad')
-
-
-
-adata = ad.read('./example.h5ad')
-scv.pp.filter_and_normalize(adata)
-scv.pp.moments(adata)
-scv.tl.velocity(adata, mode = "stochastic")
-scv.tl.velocity_graph(adata)
-scv.tl.velocity_graph(example)
+# scv.settings.verbosity = 3  # show errors(0), warnings(1), info(2), hints(3)
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-# spliced/unspliced的比例
-scv.pl.proportions(adata)
-
-# plot
-scv.pl.velocity_embedding(adata, basis = 'umap')
-scv.pl.velocity_embedding_stream(adata, basis = 'umap')
-
-## scvelo RNA速率分析
-# 预处理1
-scv.pp.filter_and_normalize(ob_merge)
-scv.pp.moments(ob_merge)
-scv.tl.velocity(ob_merge, mode = "stochastic")
-scv.tl.velocity_graph(ob_merge)
-
-# 预处理2
-scv.pp.filter_genes(adata, min_shared_counts=20)
-scv.pp.normalize_per_cell(adata)
-scv.pp.filter_genes_dispersion(adata, n_top_genes=2000)
-scv.pp.log1p(adata)
-scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
-scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
-
-
-
-# spliced/unspliced的比例
-scv.pl.proportions(adata)
-
-# 可视化
-scv.pl.velocity_embedding(adata, basis = 'umap')
-
-
-scv.pl.velocity_embedding_stream(adata, basis = 'umap')
 
 
 
