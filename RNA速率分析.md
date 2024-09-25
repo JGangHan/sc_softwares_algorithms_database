@@ -738,42 +738,100 @@ plt.close()
 
 
 ### 9. scvelo RNA速率分析，正式分析，其他细胞类型
+**1. osteo-chondro**
+```
+# 1. 提取子集
+ob_merge = ad.read('./ob_merge_second.h5ad')
+ob_merge.obs['celltype'].value_counts()
 scvelo_osch = ob_merge[ob_merge.obs['celltype'].isin(["PSC_C2", "PSC_C6", "CTP_C1", "CTP_C2", "CTP_C3", "Preosteoblast", "Osteoblast", "Prechondrocyte", "Chondrocyte_C1", "Chondrocyte_C2"]), :]
 scvelo_osch.obs['celltype'].value_counts()
+del ob_merge # 删除，不然会发生内存报错
+
+# 2. 添加 umap 信息
 scvelo_umap_osch = pd.read_csv("./osch_scvelo_umap.csv")
 scvelo_umap = scvelo_umap_osch
 scvelo_adipo
-
-# 2. 检查cell id是否一致
 target = scvelo_umap["cell_id"]
-scvelo_osch = scvelo_osch[np.isin(scvelo_osch.obs.index, target)]
-
-# 3. 提取 UMAP 信息，并对其细胞排列顺序
-## 二次检查细胞 id
+scvelo_osch = scvelo_osch[np.isin(scvelo_osch.obs.index, target)] # 检查细胞 id
 scvelo_osch_index = pd.DataFrame(scvelo_osch.obs.index) # CellID
 scvelo_osch_index = scvelo_osch_index.rename(columns={'CellID': 'cell_id'})
-scvelo_umap = scvelo_umap[scvelo_umap['cell_id'].isin(scvelo_osch_index['cell_id'])]
-## 对齐顺序
+scvelo_umap = scvelo_umap[scvelo_umap['cell_id'].isin(scvelo_osch_index['cell_id'])] # 二次检查细胞 id
 scvelo_umap_ordered = scvelo_osch_index.merge(scvelo_umap, on='cell_id')
 set(scvelo_umap_ordered[['cell_id']]) == set(scvelo_osch_index[['cell_id']])  # 检查顺序
-# 仅保留 UMAP_1 和 UMAP_2 两列
 scvelo_umap_ordered = scvelo_umap_ordered[['UMAP_1', 'UMAP_2']]
-
-# 4. 添加 UMAP 信息
 scvelo_osch.obsm['X_umap'] = scvelo_umap_ordered.values
-scvelo_osch.obsm
+scvelo_osch.obsm['X_umap'] 
 scvelo_osch.write('./scvelo_oscho_first.h5ad')
 
+# 3. 数据预处理
 adata = scvelo_osch
-# 1. 数据预处理，下边两行包含所有数据预处理步骤
 scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
 scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
-adata.write('./scvelo_adipo_second.h5ad')
+adata.write('./scvelo_oscho_second.h5ad')
 
-# 2. 速率分析
+# 4. 速率分析
 scv.tl.velocity(adata)
 scv.tl.velocity_graph(adata)
 adata.write('./scvelo_adipo_third.h5ad')
+
+
+scv.pl.velocity_embedding(adata, color='celltype', arrow_length=3, arrow_size=2, dpi=120)
+plt.savefig('osch_embedding_cell.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype')
+plt.savefig('osch_embedding_stream.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+```
+
+**2. myo**
+```
+# 1. 提取子集
+ob_merge = ad.read('./ob_merge_second.h5ad')
+ob_merge.obs['celltype'].value_counts()
+scvelo_myo = ob_merge[ob_merge.obs['celltype'].isin(["PSC_Myo", "Satellite_Cell", "Myoblast", "Myocyte"]), :]
+scvelo_myo.obs['celltype'].value_counts()
+del ob_merge # 删除，不然会发生内存报错
+
+# 2. 添加 umap 信息
+scvelo_umap_myo = pd.read_csv("./myo_scvelo_umap.csv")
+scvelo_umap = scvelo_umap_myo
+scvelo_myo
+target = scvelo_umap["cell_id"]
+scvelo_myo = scvelo_myo[np.isin(scvelo_myo.obs.index, target)] # 检查细胞 id
+scvelo_myo_index = pd.DataFrame(scvelo_myo.obs.index) # CellID
+scvelo_myo_index = scvelo_myo_index.rename(columns={'CellID': 'cell_id'})
+scvelo_umap = scvelo_umap[scvelo_umap['cell_id'].isin(scvelo_myo_index['cell_id'])] # 二次检查细胞 id
+scvelo_umap_ordered = scvelo_myo_index.merge(scvelo_umap, on='cell_id')
+set(scvelo_umap_ordered[['cell_id']]) == set(scvelo_myo_index[['cell_id']])  # 检查顺序
+scvelo_umap_ordered = scvelo_umap_ordered[['UMAP_1', 'UMAP_2']]
+scvelo_myo.obsm['X_umap'] = scvelo_umap_ordered.values
+scvelo_myo.obsm['X_umap'] 
+scvelo_myo.write('./scvelo_myo_first.h5ad')
+
+# 3. 数据预处理
+adata = scvelo_myo
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+adata.write('./scvelo_myo_second.h5ad')
+
+# 4. 速率分析
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+adata.write('./scvelo_myo_third.h5ad')
+
+
+scv.pl.velocity_embedding(adata, color='celltype', arrow_length=3, arrow_size=2, dpi=120)
+plt.savefig('osch_embedding_cell.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype')
+plt.savefig('osch_embedding_stream.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+```
+
 
 
 
