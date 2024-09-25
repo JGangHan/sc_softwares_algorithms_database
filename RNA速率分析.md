@@ -876,6 +876,7 @@ adata.write('./scvelo_adipo_vsmc_second.h5ad')
 scv.tl.velocity(adata)
 scv.tl.velocity_graph(adata)
 adata.write('./scvelo_adipo_vsmc_third.h5ad')
+adata = ad.read('./scvelo_adipo_vsmc_third.h5ad')
 
 scv.pl.velocity_embedding(adata, color='celltype', arrow_length=3, arrow_size=2, dpi=120)
 plt.savefig('adipo_vsmc_embedding_cell.png', dpi=300, bbox_inches='tight')
@@ -887,12 +888,29 @@ plt.close()
 
 
 
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000, enforce=True)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+scv.tl.umap(adata)
+scv.tl.louvain(adata)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+
+
+scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype', arrow_style="-|>")
+plt.savefig('1.png', dpi=300, bbox_inches='tight')
+plt.close()
 
 
 
 
+scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype', arrow_style="<|-")
+plt.savefig('3.png', dpi=300, bbox_inches='tight')
+plt.close()
 
 
+scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype', arrow_style="<-")
+plt.savefig('4.png', dpi=300, bbox_inches='tight')
+plt.close()
 
 
 
