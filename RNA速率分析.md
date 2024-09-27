@@ -719,8 +719,8 @@ adata.write('./scvelo_adipo_third.h5ad')
 # 3. UMAP projection，略过
 ## 因为之前 seurat 数据预处理步骤已经进行了 UMAP 分析，直接使用 UMAP 结果
 ## 如果不需要已有的 UMAP 坐标，或重新 UMAP 分析，运行下方命令
-scv.tl.umap
-scv.tl.louvain
+scv.tl.umap(adata)
+scv.tl.louvain(adata)
 
 # 4. 作图
 adata = ad.read('./scvelo_adipo_third.h5ad')
@@ -1036,8 +1036,9 @@ scvelo_osteo.obsm['X_umap']
 scvelo_osteo.write('./scvelo_osteo_first.h5ad')
 
 # 3. 数据预处理
+scvelo_osteo = ad.read('./scvelo_osteo_first.h5ad')
 adata = scvelo_osteo
-scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000, enforce=True)
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2500, enforce=True)
 scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
 adata.write('./scvelo_osteo_second.h5ad')
 
@@ -1046,18 +1047,33 @@ scv.tl.velocity(adata)
 scv.tl.velocity_graph(adata)
 adata.write('./scvelo_osteo_third.h5ad')
 scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype')
-plt.savefig('osteo_embedding_stream.png', dpi=300, bbox_inches='tight')
+plt.savefig('1.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 # 5. 结果优化
-
-
-
 adata = ad.read('./scvelo_osteo_third.h5ad')
 adata.obs['celltype'].value_counts()
-min_shared_counts=20
-n_pcs=30
-n_neighbors=30
+scv.pp.filter_genes_dispersion(adata, n_top_genes=1200)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+# size 参数设定成任何值都不管用，不知道时系统bug还是软件bug
+celltype_colors = {'PSC_C2': '#2e7d32', 'PSC_C6': '#96ed89', 'Preosteoblast': '#b8a3de', 'Osteoblast': '#8a23cd',}
+scv.pl.velocity_embedding_stream(
+    adata, color='celltype', palette = celltype_colors, basis='umap', figsize = (7,5))  # figsize = (7,5)
+plt.axis('off')
+plt.savefig('velocity_osteo_stream.png', dpi=800, bbox_inches='tight', transparent=True)
+plt.close()
+
+
+
+
+
+
+
+
+
 
 n_top_genes = 2000
 filename = f"{n_top_genes}.png"
@@ -1181,11 +1197,6 @@ scv.pl.velocity_embedding_stream(adata, basis='umap', color='celltype')
 plt.savefig(filename, dpi=300, bbox_inches='tight')
 plt.close()
 
-
-
-
-
-
 n_top_genes = 900
 filename = f"{n_top_genes}.png"
 scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
@@ -1279,16 +1290,6 @@ plt.close()
 
 
 
-
-# size 参数设定成任何值都不管用，不知道时系统bug还是软件bug
-scv.pl.velocity_embedding_stream(
-    adata, color='celltype', palette = celltype_colors, basis='umap', figsize = (5,4))  # figsize = (7,5)
-plt.axis('off')
-plt.savefig('velocity_vsmc_stream.png', dpi=800, bbox_inches='tight', transparent=True)
-plt.close()
-adata.write('./scvelo_vsmc_forth.h5ad')
-cols = c("PSC_C2"="#2e7d32", "PSC_C6"="#96ed89", 
-         "Preosteoblast"="#b8a3de","Osteoblast"="#8a23cd")
 
 
 
