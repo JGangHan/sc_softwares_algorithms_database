@@ -1353,7 +1353,7 @@ adata.write('./scvelo_myo_third.h5ad')
 # 5. 结果优化
 adata = ad.read('./scvelo_myo_third.h5ad')
 adata.obs['celltype'].value_counts()
-scv.pp.filter_genes_dispersion(adata, n_top_genes=1800)
+scv.pp.filter_genes_dispersion(adata, n_top_genes=500)
 scv.pp.log1p(adata)
 scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
 scv.tl.velocity(adata)
@@ -1363,11 +1363,246 @@ scv.tl.velocity_graph(adata)
 celltype_colors = {"PSC_Myo": "#add5f7", "Satellite_Cell": "#799ae0", "Myoblast": "#1c3ffd", "Myocyte": "#020873",}
 # size 参数设定成任何值都不管用，不知道时系统bug还是软件bug
 scv.pl.velocity_embedding_stream(
-    adata, color='celltype', palette = celltype_colors, arrow_style="-|>",  # default: -|>
+    adata, color='celltype', palette = celltype_colors, arrow_style="<|-",  # default: -|>
     basis='umap', figsize = (8,8)) 
 plt.axis('off')
 plt.savefig('velocity_myo_stream.png', dpi=800, bbox_inches='tight', transparent=True)
+#plt.savefig('1.png', dpi=800, bbox_inches='tight', transparent=True)
 plt.close()
+
+
+
+
+adata = ad.read('./scvelo_myo_third.h5ad')
+n_pcs=30
+n_neighbors=30
+n_top_genes = 2000
+
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap', arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 1900
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap', arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 1800
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap', arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 1700
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap', arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 1600
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap', arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 1500
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap', arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 1400
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap', arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 1300
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 1200
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+
+n_top_genes = 1100
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 1000
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 900
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 800
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 700
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 600
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 500
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 400
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 300
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+n_top_genes = 200
+filename = f"{n_top_genes}.png"
+scv.pp.filter_genes_dispersion(adata, n_top_genes=n_top_genes)
+scv.pp.log1p(adata)
+scv.pp.moments(adata, n_pcs=n_pcs, n_neighbors=n_neighbors)
+scv.tl.velocity(adata)
+scv.tl.velocity_graph(adata)
+scv.pl.velocity_embedding_stream(adata, basis='umap',arrow_style="<|-", color='celltype')
+plt.savefig(filename, dpi=300, bbox_inches='tight')
+plt.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ```
